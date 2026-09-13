@@ -2,6 +2,8 @@
 Be sure you have minitorch installed in you Virtual Env.
 >>> pip install -Ue .
 """
+import time
+import random
 
 import minitorch
 
@@ -71,7 +73,10 @@ class TensorTrain:
         y = minitorch.tensor(data.y)
 
         losses = []
+        self.times_for_epoch = []
         for epoch in range(1, self.max_epochs + 1):
+            epoch_start_time = time.perf_counter()
+
             total_loss = 0.0
             correct = 0
             optim.zero_grad()
@@ -88,6 +93,9 @@ class TensorTrain:
             # Update
             optim.step()
 
+            epoch_end_time = time.perf_counter()
+            self.times_for_epoch.append(epoch_end_time - epoch_start_time)
+
             # Logging
             if epoch % 10 == 0 or epoch == max_epochs:
                 y2 = minitorch.tensor(data.y)
@@ -99,5 +107,13 @@ if __name__ == "__main__":
     PTS = 50
     HIDDEN = 2
     RATE = 0.5
-    data = minitorch.datasets["Simple"](PTS)
-    TensorTrain(HIDDEN).train(data, RATE)
+    # data = minitorch.datasets["Simple"](PTS)
+    # TensorTrain(HIDDEN).train(data, RATE)   
+
+    for dataset_name in minitorch.datasets:
+        data = minitorch.datasets[dataset_name](PTS)
+        tensor_train = TensorTrain(HIDDEN)
+
+        tensor_train.train(data, RATE)
+
+        print(f'Dataset: {dataset_name}, time per epoch: {sum(tensor_train.times_for_epoch)/len(tensor_train.times_for_epoch)}')
